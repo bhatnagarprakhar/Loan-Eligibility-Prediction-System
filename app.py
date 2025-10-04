@@ -1,15 +1,15 @@
-# from flask import Flask, request, render_template_string
-# import joblib
-# import pandas as pd
+ from flask import Flask, request, render_template_string
+ import joblib
+ import pandas as pd
 
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# # Load all required artifacts
-# model = joblib.load("loan_prediction_model.pkl")
-# scaler = joblib.load("scaler.pkl")
-# feature_names = joblib.load("feature_names.pkl")  # Saved during training
+Load all required artifacts
+ model = joblib.load("loan_prediction_model.pkl")
+ scaler = joblib.load("scaler.pkl")
+feature_names = joblib.load("feature_names.pkl")  # Saved during training
 
-# HTML_TEMPLATE = """
+ HTML_TEMPLATE = """
 # <!DOCTYPE html>
 # <html lang="en">
 # <head>
@@ -163,98 +163,98 @@
 # </body>
 # </html>
 # """
-# def predict_eligibility(data):
-#     try:
-#         # 1. Set Credit_History (adjust threshold if needed)
-#         credit_history = 1 if data['credit_score'] >= 600 else 0
+def predict_eligibility(data):
+    try:
+        #1. Set Credit_History (adjust threshold if needed)
+    credit_history = 1 if data['credit_score'] >= 600 else 0
         
-#         # 2. Ensure CoapplicantIncome isn't 0 (if training data had co-applicants)
-#         coapplicant_income = data['coapplicant_income'] if data['coapplicant_income'] > 0 else 1000
+ #2. Ensure CoapplicantIncome isn't 0 (if training data had co-applicants)
+         coapplicant_income = data['coapplicant_income'] if data['coapplicant_income'] > 0 else 1000
         
-#         # 3. Create input DataFrame with EXACTLY the same columns as training
-#         input_data = pd.DataFrame([[
-#             data['income'],
-#             coapplicant_income,
-#             credit_history,
-#             data['loan_amount'],
-#             data['loan_term'],
-#             1 if data['gender'] == "Male" else 0,
-#             1 if data['married'] == "Yes" else 0,
-#             1 if data['self_employed'] == "Yes" else 0
-#         ]], columns=feature_names)
+#3. Create input DataFrame with EXACTLY the same columns as training
+        input_data = pd.DataFrame([[
+            data['income'],
+            coapplicant_income,
+            credit_history,
+             data['loan_amount'],
+             data['loan_term'],
+            1 if data['gender'] == "Male" else 0,
+             1 if data['married'] == "Yes" else 0,
+             1 if data['self_employed'] == "Yes" else 0
+         ]], columns=feature_names)
         
-#         # 4. Debug: Print input data before scaling
-#         print("\n--- Input Data Before Scaling ---")
-#         print(input_data)
+         # 4. Debug: Print input data before scaling
+         print("\n--- Input Data Before Scaling ---")
+         print(input_data)
         
-#         # 5. Scale the data
-#         scaled_data = scaler.transform(input_data)
+         # 5. Scale the data
+         scaled_data = scaler.transform(input_data)
         
-#         # 6. Debug: Print scaled data
-#         print("\n--- Scaled Input Data ---")
-#         print(pd.DataFrame(scaled_data, columns=feature_names))
+         # 6. Debug: Print scaled data
+         print("\n--- Scaled Input Data ---")
+         print(pd.DataFrame(scaled_data, columns=feature_names))
         
-#         # 7. Predict
-#         prediction = model.predict(scaled_data)[0]
+         # 7. Predict
+         prediction = model.predict(scaled_data)[0]
         
-#         return {
-#             'result': "✅ Approved!" if prediction == 1 else "❌ Rejected.",
-#             'result_class': 'approved' if prediction == 1 else 'rejected'
-#         }
+         return {
+             'result': "✅ Approved!" if prediction == 1 else "❌ Rejected.",
+             'result_class': 'approved' if prediction == 1 else 'rejected'
+         }
     
-#     except Exception as e:
-#         return {
-#             'result': f"⚠️ Error: {str(e)}",
-#             'result_class': 'error'
-#         }
-# @app.route('/', methods=['GET'])
-# def home():
-#     return render_template_string(HTML_TEMPLATE)
+     except Exception as e:
+         return {
+             'result': f"⚠️ Error: {str(e)}",
+             'result_class': 'error'
+         }
+ @app.route('/', methods=['GET'])
+ def home():
+     return render_template_string(HTML_TEMPLATE)
 
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     try:
-#         # Validate and convert form data
-#         form_data = {
-#             'income': float(request.form['income']),
-#             'coapplicant_income': float(request.form['coapplicant_income']),
-#             'loan_amount': float(request.form['loan_amount']),
-#             'loan_term': float(request.form['loan_term']),
-#             'credit_score': float(request.form['credit_score']),
-#             'gender': request.form['gender'],
-#             'married': request.form['married'],
-#             'self_employed': request.form['self_employed']
-#         }
+ @app.route('/predict', methods=['POST'])
+ def predict():
+     try:
+         # Validate and convert form data
+         form_data = {
+             'income': float(request.form['income']),
+             'coapplicant_income': float(request.form['coapplicant_income']),
+             'loan_amount': float(request.form['loan_amount']),
+             'loan_term': float(request.form['loan_term']),
+             'credit_score': float(request.form['credit_score']),
+             'gender': request.form['gender'],
+             'married': request.form['married'],
+             'self_employed': request.form['self_employed']
+         }
 
-#         # Validate numerical inputs
-#         for field in ['income', 'coapplicant_income', 'loan_amount', 'loan_term']:
-#             if form_data[field] < 0:
-#                 raise ValueError(f"{field} cannot be negative")
+         # Validate numerical inputs
+         for field in ['income', 'coapplicant_income', 'loan_amount', 'loan_term']:
+             if form_data[field] < 0:
+                 raise ValueError(f"{field} cannot be negative")
         
-#         if not (300 <= form_data['credit_score'] <= 850):
-#             raise ValueError("Credit score must be between 300 and 850")
+         if not (300 <= form_data['credit_score'] <= 850):
+             raise ValueError("Credit score must be between 300 and 850")
 
-#         # Get prediction
-#         prediction = predict_eligibility(form_data)
-#         return render_template_string(HTML_TEMPLATE, 
-#                                   result=prediction['result'],
-#                                   result_class=prediction['result_class'])
+         # Get prediction
+         prediction = predict_eligibility(form_data)
+         return render_template_string(HTML_TEMPLATE, 
+                                   result=prediction['result'],
+                                   result_class=prediction['result_class'])
 
-#     except ValueError as ve:
-#         return render_template_string(HTML_TEMPLATE, 
-#                                    result=f"Invalid input: {str(ve)}",
-#                                    result_class='error')
-#     except KeyError as ke:
-#         return render_template_string(HTML_TEMPLATE, 
-#                                    result=f"Missing field: {str(ke)}",
-#                                    result_class='error')
-#     except Exception as e:
-#         return render_template_string(HTML_TEMPLATE, 
-#                                    result=f"An error occurred: {str(e)}",
-#                                    result_class='error')
+     except ValueError as ve:
+         return render_template_string(HTML_TEMPLATE, 
+                                    result=f"Invalid input: {str(ve)}",
+                                    result_class='error')
+     except KeyError as ke:
+         return render_template_string(HTML_TEMPLATE, 
+                                    result=f"Missing field: {str(ke)}",
+                                    result_class='error')
+     except Exception as e:
+         return render_template_string(HTML_TEMPLATE, 
+                                    result=f"An error occurred: {str(e)}",
+                                    result_class='error')
 
-# if __name__ == '__main__':
-#     app.run(debug=True, host='0.0.0.0', port=5000)
+ if __name__ == '__main__':
+     app.run(debug=True, host='0.0.0.0', port=5000)
 
 from flask import Flask, request, render_template_string
 import pandas as pd
@@ -486,4 +486,5 @@ def predict():
         return render_template_string(HTML_TEMPLATE, result=error_msg, result_class="error")
 
 if __name__ == '__main__':
+
     app.run(debug=True, host='0.0.0.0', port=5000)
